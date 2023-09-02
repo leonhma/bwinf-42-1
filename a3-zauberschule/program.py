@@ -111,45 +111,46 @@ def main():
     n, m, room, start, end = load_zauberschule(f"input/zauberschule{n_bsp}.txt")
     print(room)
 
-    plan = np.zeros((2, n, m), "int16, int16, int16")
+    plan = np.zeros((2, n, m), "3uint16")
     seen = np.zeros((2, n, m), bool)
+    seen[start] = True
     queue: List[DijkstraItem] = []
     heapq.heappush(queue, DijkstraItem(0, start))
 
     # run dijkstra and set the coord of the previous field at position of B
-    def dijkstra():
-        n_steps = 0
-        while len(queue) != 0:
-            n_steps += 1
-            item = heapq.heappop(queue)
-            distance = item.distance
-            coord = item.coord
-            seen[coord] = True
+    n_steps = 0
+    while len(queue) != 0:
+        n_steps += 1
+        item = heapq.heappop(queue)
+        distance = item.distance
+        coord = item.coord
+        if coord == end:
+            print(f'break found path with length {distance} in {n_steps} steps')
+            break
 
-            for step, cost in STEPS:
-                next_coord = tuple(np.add(coord, step))
-                if (
-                    not in_bounds(next_coord, (0, 0, 0), (2, n, m))
-                    or room[next_coord] == "#"
-                    or (step[0] == 0 and room[tuple(np.add(coord, np.floor_divide(step, 2)))] == '#')
-                    or seen[next_coord]
-                ):
-                    continue
-                plan[next_coord] = coord
-                if next_coord == end:  # two coords match
-                    print(f"found b with length {distance + cost} in {n_steps} step(s)")
-                    return True  # found point B
-                heapq.heappush(queue, DijkstraItem(distance + cost, next_coord))
-
-        return False
-
-    if not dijkstra():
+        for step, cost in STEPS:
+            next_coord = tuple(np.add(coord, step))
+            if (
+                not in_bounds(next_coord, (0, 0, 0), (2, n, m))
+                or (step[0] == 0 and room[tuple(np.add(coord, np.floor_divide(step, 2)))] == '#')
+                or seen[next_coord]
+            ):
+                continue
+            plan[next_coord] = coord
+            seen[next_coord] = True
+            if next_coord == end:
+                print(f'would have found path in {n_steps}')
+            heapq.heappush(queue, DijkstraItem(distance + cost, next_coord))
+    else:
         raise ValueError("Punkt B nicht gefunden!")
 
-    print(plan)
-    print(seen)
     # backtrace from B to A
     # print path
 
 
-main()
+while True:
+    try:
+        main()
+    except Exception as e:
+        print(f'{e.__class__.__name__}: {e}')
+    print()
