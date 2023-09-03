@@ -1,5 +1,4 @@
 import dataclasses
-from enum import Enum
 import heapq
 import os
 from typing import Iterable, List, Tuple
@@ -13,20 +12,20 @@ class Char:
     _WALL = "#"
     _START = "A"
     _END = "B"
-    BL = "⮲"
-    BT = "⇧"
-    BR = "⮳"
-    LT = "⮵"
-    LR = "⇨"
-    LB = "⮷"
-    TR = "⮱"
-    TB = "⇩"
-    TL = "⮰"
-    RB = "⮶"
-    RL = "⇦"
-    RT = "⮴"
-    VU = "⊙"
-    VD = "⊗"
+    BL = "<"
+    BT = "^"
+    BR = ">"
+    LT = "^"
+    LR = ">"
+    LB = "v"
+    TR = ">"
+    TB = "v"
+    TL = "<"
+    RB = "v"
+    RL = "<"
+    RT = "^"
+    VU = "!"
+    VD = "!"
 
 
 # (Veränderung der Feld-Koordinaten, zu überprüfende Wand-Koordinate, Wegkosten)
@@ -39,6 +38,7 @@ STEPS = (
     (lambda i, j, k: ((i + 1, j, k), None), 3),  # Stockwerk-wechsel nach oben
 )
 
+# Helfer-Funktionen und Konstanten für die Ausgabe
 STEP_CHARS = {(0, 0, -1): Char.RL, (0, 0, 1): Char.LR, (0, -1, 0): Char.BT, (0, 1, 0): Char.TB}
 PRETTY_KERNELS = (
     lambda x: x[0, 1] == Char.TB and x[1, 2] == Char.LR and Char.TR,
@@ -60,7 +60,7 @@ def load_zauberschule(
     path: str,
 ) -> Tuple[int, int, np.ndarray, Tuple[int, int, int], Tuple[int, int, int]]:
     """
-    Öffne ein Beispiel und gebe den Raumplan, sowie die Start- und Endposition zurück.
+    Öffne ein Beispiel und gebe den Raumplan, dessen Größe, sowie die Start- und Endposition zurück.
 
     Parameters
     ----------
@@ -73,14 +73,15 @@ def load_zauberschule(
         Ein Tuple bestehend aus:
           - int n
           - int m
-          - Raumplan: 3-dimensionales Tuple, in dem Wände mit `False` und Gänge mit `True`
-            markiert sind.
+          - Raumplan: 3-dimensionales numpy.ndarray, das die einzelnen Charaktere enthält.
           - Der Startposition: Koordinate im Raumplan.
           - Der Endposition: Koordinate im Raumplan.
     """
     with open(os.path.join(os.path.dirname(__file__), path), "r", encoding="utf8") as f:
+        # Dimensionen einer Ebene einlesen
         n, m = map(int, f.readline().split())
 
+        # Variablen für Start- und Endkoordinaten und den Raumplan
         start, end = None, None
         room = np.empty((2, n, m), dtype=str)
 
@@ -88,17 +89,18 @@ def load_zauberschule(
             nonlocal start, end
             for ni in range(n):
                 for mi, c in enumerate(f.readline()[:m]):
-                    room[lv][ni][mi] = c
+                    room[lv][ni][mi] = c  # Charakter in `room` speichern
                     if c == Char._START:
-                        start = (lv, ni, mi)
+                        start = (lv, ni, mi)  # Startposition speichern
                     if c == Char._END:
-                        end = (lv, ni, mi)
+                        end = (lv, ni, mi)  # Endposition speichern
 
-        load(1)
-        f.readline()
-        load(0)
+        load(1)  # Oberes Stockwerk laden
+        f.readline()  # eine Leerzeile "verbrauchen"
+        load(0)  # Unteres Stockwerk einlesen
 
-        assert None not in (start, end), "Punkt A oder B konnten nicht gefunden werden!"
+        assert None not in (start, end), "Ungültiges Beispiel!" \
+            " (Punkt A oder B konnten nicht gefunden werden)"
 
         return n, m, room, start, end
 
@@ -110,10 +112,14 @@ class DijkstraItem:
 
     Attributes
     ----------
-    distance: int
+    distance : int
         Die Distanz von Punkt A zur Koordinate `coord`.
-    coord: Tuple[int, int, int]
+    coord : Tuple[int, int, int]
         Die Kordinate des Felds.
+    prev_coord : Tuple[int, int, int]
+        Die Koordinate des Feldes bei dessen Besichtigung dieses Item
+        in die queue hinzugefügt wurde. D. h. Diese Koordinate ist das nächste
+        Feld auf dem kürzesten Weg in Richtung Startpunkt.
     """
 
     distance: int
