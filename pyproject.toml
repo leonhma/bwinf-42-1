@@ -4,3 +4,4 @@ target-version = ['py310']
 
 [tool.pylama]
 max_line_length = 100
+ignore = 'E203'
