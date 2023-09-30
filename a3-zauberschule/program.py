@@ -1,6 +1,7 @@
 import dataclasses
 import heapq
 import os
+import time
 from typing import Iterable, List, Tuple
 
 import numpy as np
@@ -28,7 +29,7 @@ class Char:
     VD = "!"
 
 
-# (Veränderung der Feld-Koordinaten, zu überprüfende Wand-Koordinate, Wegkosten)
+# (Veränderung der Feld-Koordinaten (plan, seen), zu überprüfende Wand-Koordinate (room), Wegkosten)
 STEPS = (
     (lambda i, j, k: ((i, j, k - 1), (i, 2 * j + 1, 2 * k)), 1),  # Schritt nach links
     (lambda i, j, k: ((i, j, k + 1), (i, 2 * j + 1, 2 * k + 2)), 1),  # Schritt nach rechts
@@ -60,7 +61,7 @@ def load_zauberschule(
     path: str,
 ) -> Tuple[int, int, np.ndarray, Tuple[int, int, int], Tuple[int, int, int]]:
     """
-    Öffne ein Beispiel und gebe den Raumplan, dessen Größe, sowie die Start- und Endposition zurück.
+    Öffne ein Beispiel und gebe den Raumplan, sowie die Start- und Endposition zurück.
 
     Parameters
     ----------
@@ -69,10 +70,8 @@ def load_zauberschule(
 
     Returns
     -------
-    Tuple[int, int, np.ndarray, Tuple[int, int, int], Tuple[int, int, int]]
+    Tuple[np.ndarray, Tuple[int, int, int], Tuple[int, int, int]]
         Ein Tuple bestehend aus:
-          - int n
-          - int m
           - Raumplan: 3-dimensionales numpy.ndarray, das die einzelnen Charaktere enthält.
           - Der Startposition: Koordinate im Raumplan.
           - Der Endposition: Koordinate im Raumplan.
@@ -99,10 +98,12 @@ def load_zauberschule(
         f.readline()  # eine Leerzeile "verbrauchen"
         load(0)  # Unteres Stockwerk einlesen
 
-        assert None not in (start, end), "Ungültiges Beispiel!" \
-            " (Punkt A oder B konnten nicht gefunden werden)"
+        assert None not in (
+            start,
+            end,
+        ), "Ungültiges Beispiel! (Punkt A oder B konnten nicht gefunden werden)"
 
-        return n, m, room, start, end
+        return room, start, end
 
 
 @dataclasses.dataclass(order=True)
@@ -189,73 +190,57 @@ def to_room_coord(x: Tuple[int, int, int]) -> Tuple[int, int, int]:
     return x[0], x[1] * 2 + 1, x[2] * 2 + 1
 
 
-def main():
-    n_bsp = input("Bitte Nummer des Beispiels eingeben:\n> ")
-    n, m, room, start, end = load_zauberschule(f"input/zauberschule{n_bsp}.txt")
-    # Werte für die kleinere Matrix umrechen
-    n_p, m_p = map(lambda x: int((x - 1) / 2), (n, m))
-    start_p, end_p = map(to_plan_coord, (start, end))
-
+def dijkstra(
+    room: np.ndarray,
+    plan: np.ndarray,
+    n_p: int,
+    m_p: int,
+    start_p: Tuple[int, int, int],
+    end_p: Tuple[int, int, int],
+):
     # Die einzelnen Felder für den Dijkstra-Algorithmus
     # und das Zugehörige Array zum markieren besuchter Felder
-    plan = np.empty((2, n_p, m_p), "3uint16")
     seen = np.zeros((2, n_p, m_p), bool)
     # heap als Schlange für den Algorithmus
     queue: List[DijkstraItem] = []
     # Erstes Item (Startpunkt) in die Schlange
     heapq.heappush(queue, DijkstraItem(0, start_p, (0, 0, 0)))
 
-    # run dijkstra and set the coord of the previous field at position of B
+    # Dijkstra-Algorithmus
     n_steps = 0
     while len(queue) != 0:
         n_steps += 1
         item = heapq.heappop(queue)
         distance = item.distance
         coord = item.coord
+        # Wenn dieses Feld schon besucht wurde, weiter iterieren
         if seen[coord]:
             continue
+        # Aktuelles Feld als besucht markieren
         seen[coord] = True
+        # Vorgänger-Feld festhalten
         plan[coord] = item.prev_coord
 
+        # Wenn der Endpunkt gefunden wurde, ist der Algorithmus fertig
         if coord == end_p:
-            print(f"break found path with length {distance} in {n_steps} steps")
-            break
+            return n_steps, distance
 
+        # Iterieren der verschiedenen Schritt-Möglichkeiten
         for fn, cost in STEPS:
             next_coord, to_check = fn(*coord)
             next_distance = distance + cost
+            # wenn der Schritt außerhalb des Raums liegt oder eine Wand im Weg steht, überpringen
             if not in_bounds(next_coord, np.shape(plan)) or (
                 to_check and room[to_check] == Char._WALL
             ):
                 continue
+            # mögliches Feld in die Schlange hinzufügen
             heapq.heappush(queue, DijkstraItem(next_distance, next_coord, coord))
     else:
         raise ValueError("Es wurde kein Pfad gefunden!")
 
-    for lv in range(np.shape(plan)[0] - 1, -1, -1):
-        print("-" * (np.shape(plan)[2] + 4))
-        for n in range(np.shape(plan)[1]):
-            print("| ", end="")
-            for m in range(np.shape(plan)[2]):
-                v = plan[lv, n, m]
-                char = " "
-                if not seen[lv, n, m]:
-                    pass
-                elif v[0] != lv:
-                    char = "!"
-                elif v[1] < n:
-                    char = "⌄"
-                elif v[1] > n:
-                    char = "^"
-                elif v[2] < m:
-                    char = ">"
-                elif v[2] > m:
-                    char = "<"
-                print(f"{char}", end="")
-            print(" |")
-        print("-" * (np.shape(plan)[2] + 4))
 
-    # Verfolgen des Pfades und einfügen der Wegmarkierungen
+def trace(room, start_p, end_p, plan):
     prev_p = end_p
     while True:
         current_p = tuple(plan[prev_p])
@@ -280,6 +265,8 @@ def main():
             break
         prev_p = current_p
 
+
+def pretty(room):
     for lv in range(2):
         for n_ci in range(1, np.shape(room)[1], 2):
             for m_ci in range(1, np.shape(room)[2], 2):
@@ -287,24 +274,68 @@ def main():
                 for kernel in PRETTY_KERNELS:
                     if char := kernel(space):
                         room[lv, n_ci, m_ci] = char
-                        print(f'setting char "{char}" at position {(lv, n_ci, m_ci)}')
                         break
 
-    for li in room[::-1]:
-        for ni in li:
-            for mi in ni:
-                print(mi, end="")
+
+def export(room: np.ndarray, path: str) -> str:
+    p = os.path.join(os.path.dirname(__file__), path)
+    shape = np.shape(room)
+    with open(p, "w", encoding="utf8") as f:
+        f.write(" ".join(map(str, np.shape(room)[1:])))
+        f.write("\n")
+        for li in room[::-1]:
+            for ni in li:
+                for mi in ni:
+                    f.write(mi)
+                f.write("\n")
+            f.write("\n")
+    return p
+
+
+def main(room, start, end, n_bsp):
+    t_s = time.time()  # Zeitmessung start
+
+    # Werte für die kleinere Matrix umrechen
+    n_p, m_p = map(lambda x: int((x - 1) / 2), np.shape(room)[1:])
+    start_p, end_p = map(to_plan_coord, (start, end))
+    plan = np.empty((2, n_p, m_p), "3uint16")
+    n_steps, distance = dijkstra(room, plan, n_p, m_p, start_p, end_p)
+
+    t_e = time.time()  # Zeitmessung ende
+
+    # Verfolgen des berechneten Pfades und einfügen der Wegmarkierungen
+    trace(room, start_p, end_p, plan)
+
+    pretty(room)
+
+    # Raum als ASCII-Art ausgeben
+    if n_bsp <= 3:
+        shape = np.shape(room)
+        print(f'Oben:{" "*(shape[2]-4)}Unten:')
+        for ni in range(shape[1]):
+            for li in range(shape[0] - 1, -1, -1):
+                for mi in range(shape[2]):
+                    print(room[li, ni, mi], end="")
+                print(" ", end="")
             print()
+
         print()
+
+    # Exportieren nach Datei
+    path = export(room, f"output/zauberschule{n_bsp}.txt")
+    print(f"Ausgabe exportiert nach: {path}.")
+    print()
+
+    # Lösungswerte ausgeben
+    print(f"Weg mit Länge {distance}s in {n_steps} Iterationen ({((t_e-t_s)*1000):.2f}ms) gefunden.")
 
 
 while True:
     try:
-        main()
-        # arr = np.array([["#", "⇩", "#"], ["#", ".", "."], ["#", "⇩", "#"]])
-        # for kernel in PRETTY_KERNELS:
-        #     print(kernel(arr))
-        # break
+        n_bsp = int(input("Bitte Nummer des Beispiels eingeben:\n> "))
+        room, start, end = load_zauberschule(f"input/zauberschule{n_bsp}.txt")
+        print()
+        main(room, start, end, n_bsp)
     except Exception as e:
         print(f"{e.__class__.__name__}: {e}")
     print()
