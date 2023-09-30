@@ -279,7 +279,6 @@ def pretty(room):
 
 def export(room: np.ndarray, path: str) -> str:
     p = os.path.join(os.path.dirname(__file__), path)
-    shape = np.shape(room)
     with open(p, "w", encoding="utf8") as f:
         f.write(" ".join(map(str, np.shape(room)[1:])))
         f.write("\n")
@@ -327,7 +326,9 @@ def main(room, start, end, n_bsp):
     print()
 
     # Lösungswerte ausgeben
-    print(f"Weg mit Länge {distance}s in {n_steps} Iterationen ({((t_e-t_s)*1000):.2f}ms) gefunden.")
+    print(
+        f"Weg mit Länge {distance}s in {n_steps} Iterationen ({((t_e-t_s)*1000):.2f}ms) gefunden."
+    )
 
 
 while True:
