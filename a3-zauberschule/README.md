@@ -4,7 +4,7 @@
 
 ## Lösungsidee
 
-Zur Lösung dieses Shortest-Path-Problems gibt es einige bekannte Algorithmen. Die möglichen Wege in der Zauberschule können als gewichteter Graph dargestellt werden, wobei Bewegungen in die vier Richtungen (links, oben, rechts, unten) ein Gewicht von $1$, und Stockwerkwechsel ein Gewicht von $3$ haben. Um nun einen kürzesten Pfad zu finden, wird Dijkstra's Algorithmus verwendet. Für jeden besuchten Knoten (Feld) wird dessen Vorgänger gespeichert, sodass letztendlich der Pfad selbst zurückverfolgt werden kann. Entsprechend Dijktra's Algorithmus ist dies der kürzeste Pfad.
+Zur Lösung dieses Shortest-Path-Problems gibt es einige bekannte Algorithmen. Die möglichen Wege in der Zauberschule können als gewichteter Graph dargestellt werden, wobei Bewegungen in die vier Richtungen (links, oben, rechts, unten) ein Gewicht von $1$, und Stockwerkwechsel ein Gewicht von $3$ haben. Um nun einen kürzesten Pfad zu finden, wird Dijkstra's Algorithmus verwendet. Für jeden besuchten Knoten (Feld) wird dessen Vorgänger gespeichert, sodass letztendlich der Pfad selbst zurückverfolgt werden kann. Entsprechend Dijktra's Algorithmus ist dies der kürzest mögliche Pfad.
 
 ## Umsetzung
 

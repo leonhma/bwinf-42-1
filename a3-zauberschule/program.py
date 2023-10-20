@@ -59,7 +59,7 @@ PRETTY_KERNELS = (
 
 def load_zauberschule(
     path: str,
-) -> Tuple[int, int, np.ndarray, Tuple[int, int, int], Tuple[int, int, int]]:
+) -> Tuple[np.ndarray, Tuple[int, int, int], Tuple[int, int, int]]:
     """
     Öffne ein Beispiel und gebe den Raumplan, sowie die Start- und Endposition zurück.
 
