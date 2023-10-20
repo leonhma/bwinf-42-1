@@ -1,6 +1,6 @@
-from itertools import product
 import os
 import time
+from itertools import product
 from typing import Dict, List, Tuple
 
 import numpy as np

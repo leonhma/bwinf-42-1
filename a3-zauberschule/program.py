@@ -116,7 +116,7 @@ class DijkstraItem:
     distance : int
         Die Distanz von Punkt A zur Koordinate `coord`.
     coord : Tuple[int, int, int]
-        Die Kordinate des Felds.
+        Die Koordinate des Felds.
     prev_coord : Tuple[int, int, int]
         Die Koordinate des Feldes bei dessen Besichtigung dieses Item
         in die queue hinzugefügt wurde. D. h. Diese Koordinate ist das nächste
@@ -240,6 +240,7 @@ def dijkstra(
         raise ValueError("Es wurde kein Pfad gefunden!")
 
 
+# Zurückverfolgen des Pfades und einfügen der Wegmarkierungen
 def trace(room, start_p, end_p, plan):
     prev_p = end_p
     while True:
@@ -266,6 +267,7 @@ def trace(room, start_p, end_p, plan):
         prev_p = current_p
 
 
+# einfügen von Markierungen zwischen den Feldern
 def pretty(room):
     for lv in range(2):
         for n_ci in range(1, np.shape(room)[1], 2):
@@ -277,6 +279,7 @@ def pretty(room):
                         break
 
 
+# Speichern des Pfades in eine Datei
 def export(room: np.ndarray, path: str) -> str:
     p = os.path.join(os.path.dirname(__file__), path)
     with open(p, "w", encoding="utf8") as f:
@@ -291,6 +294,7 @@ def export(room: np.ndarray, path: str) -> str:
     return p
 
 
+# Haupt-Loop
 def main(room, start, end, n_bsp):
     t_s = time.time()  # Zeitmessung start
 
@@ -321,8 +325,8 @@ def main(room, start, end, n_bsp):
         print()
 
     # Exportieren nach Datei
-    path = export(room, f"output/zauberschule{n_bsp}.txt")
-    print(f"Ausgabe exportiert nach: {path}.")
+    export(room, f"output/zauberschule{n_bsp}.txt")
+    print(f'Ausgabe gespeichert in "output/zauberschule{n_bsp}.txt"')
     print()
 
     # Lösungswerte ausgeben

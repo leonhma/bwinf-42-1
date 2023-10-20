@@ -5,7 +5,7 @@
 ## Lösungsidee
 
 Die Bausteine aus der Aufgabe können leicht als Lambda-Funktionen modelliert
-werden. Nun wird die Aufgabe als Matrix geladen und über die einzelnen Zeilen
+werden. Die Aufgabe wird als Matrix geladen und es wird über die einzelnen Zeilen
 und Buchstaben iteriert um Bausteine zu finden. Licht-Zustände werden in einer
 eigenen Matrix gespeichert, in der zu Anfang die Eingabezustände eingetragen
 werden. Wenn beim Iterieren zwei Buchstaben gefunden werden, die zu einem
@@ -178,9 +178,9 @@ Ausgabe gespeichert in "output/nandu5.csv"
 `program.py`
 
 ```python
-from itertools import product
 import os
 import time
+from itertools import product
 from typing import Dict, List, Tuple
 
 import numpy as np
