@@ -1,0 +1,196 @@
+\documentclass[a4paper,12pt]{scrartcl}
+
+\usepackage[english,ngerman]{babel}
+\usepackage{csquotes}
+\usepackage{color}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{anyfontsize}
+\usepackage[hidelinks]{hyperref}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{tabu}
+\usepackage{tabularx}
+\usepackage[ngerman]{cleveref}
+\usepackage[onehalfspacing]{setspace}
+\usepackage[ backend=biber]{biblatex}
+\addbibresource{refs.bib}
+
+\title{\textbf{\Huge Aufgabe 5: „Stadtführung“}}
+\author{\LARGE Team-ID: \LARGE 00128 \\\\
+	    \LARGE Team-Name: \LARGE E29C8CF09F8E89 \\\\
+	    \LARGE Bearbeiter/-innen dieser Aufgabe: \\ 
+	    \LARGE Leonhard Masche\\\\}
+\date{\LARGE\today}
+
+% code
+\usepackage[cache=false]{minted}
+\usemintedstyle{xcode}
+
+% set up geometry
+% \usepackage[lmargin={3.5cm},rmargin={2cm}, tmargin={2cm},bmargin = {2cm}]{geometry}
+
+% font
+\usepackage{fontspec}
+% \setmonofont{Fira Code SemiBold}
+\setmainfont{Arial}
+
+% configure headers and footers
+\graphicspath{{./assets/}}
+
+% custom commands
+\newcommand*\wildcard[2][5cm]{\vspace*{2cm}\parbox{#1}{\hrulefill\par#2}}
+\newcommand{\fig}[3][]{\begin{figure}[H] \includegraphics[#1]{#2}
+\centering\caption{#3}\end{figure}}
+\newcommand{\pyinline}[1]{\mintinline{python}{#1}}
+
+\pagenumbering{arabic}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+% hyphenation
+\hyphenation{Fraun-hof-er}
+
+% \setcounter{biburlnumpenalty}{100}
+% \setcounter{biburlucpenalty}{100}
+% \setcounter{biburllcpenalty}{100}
+
+\usepackage[hang]{footmisc}
+\setlength{\footnotemargin}{0.8em}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\section{Lösungsidee}
+
+Da der Startpunkt der Tour egal ist, und nur essentielle Orte („Knoten“)
+bestehen bleiben müssen, werden alle nonessentiellen Knoten vom Anfang der Tour
+entfernt. Nun werden alle Start- und End-Indices von Subtouren generiert. Dazu
+wird von jedem Index in der Tour (linker Pointer) aus ein zweiter Pointer
+inkrementiert, bis entweder: ein Knoten mit demselben Namen gefunden wurde (die
+Subtour wird hinzugefügt), oder ein essentieller Knoten gefunden wurde. Aus
+diesen Subtouren wird (entsprechend dem Weighted Interval Scheduling Problem)
+die größtmögliche Reihenfolge von Subtouren ermittelt. Diese werden nun
+entfernt, und das Ergebnis ausgegeben.
+
+\section{Umsetzung}
+
+Das Programm (\texttt{program.py}) ist in Python umgesetzt und mit einer
+Umgebung ab der Version 3.8 ausführbar.
+
+Beim Ausführen der Datei wird zuerst nach der Zahl des Beispiels gefragt. Dieses
+wird nun aus der Datei \texttt{input/tour\{n\}.txt} geladen und bearbeitet. Die
+Tour wird als chronologisch sortierte Liste gespeichert. Die Subtouren werden
+(wie beschrieben im vorherigen Abschnitt) durch zwei verschachtelte
+\pyinline{for}-Schleifen ermittelt. Durch dynamic programming wird die längste
+Kombination von Subtouren ermittelt, um diese dann aus der Liste zu entfernen.
+\footfullcite[Vgl.][]{mouatadidDynamicProgrammingWeighted} Zum Schluss wird die
+gekürzte Tour in die Konsole ausgegeben. Das Programm läuft mit einer
+Zeitkomplexität von $\mathcal{O}(n²)$ und alle Beispiele werden in unter 0.05ms
+bearbeitet.
+
+\section{Beispiele}
+
+Hier wird das Programm auf die 5 Beispiele von der Website angewendet:
+
+\begin{itemize}
+	\item \textbf{tour1.txt}\begin{minted}[breaklines]{text}
+Berechnet in 0.02ms
+
+Tour:   (Gesamtlänge 1020)
+1. Brauerei (1613)
+2. Karzer (1665)
+3. Rathaus (1678,1739)
+4. Euler-Brücke (1768)
+5. Fibonacci-Gaststätte (1820)
+6. Schiefes Haus (1823)
+7. Theater (1880)
+8. Emmy-Noether-Campus (1912,1998)
+9. Euler-Brücke (1999)
+10. Brauerei (2012)
+	\end{minted}
+	\item \textbf{tour2.txt}\begin{minted}[breaklines]{text}
+Berechnet in 0.03ms
+
+Tour:   (Gesamtlänge 940)
+1. Karzer (1665)
+2. Rathaus (1678,1739)
+3. Euler-Brücke (1768)
+4. Fibonacci-Gaststätte (1820)
+5. Schiefes Haus (1823)
+6. Theater (1880)
+7. Emmy-Noether-Campus (1912,1998)
+8. Euler-Brücke (1999)
+9. Brauerei (2012)
+	\end{minted}
+	\item \textbf{tour3.txt}\begin{minted}[breaklines]{text}
+Berechnet in 0.02ms
+
+Tour:   (Gesamtlänge 1220)
+1. Observatorium (1874)
+2. Piz Spitz (1898)
+3. Panoramasteg (1912,1952)
+4. Ziegenbrücke (1979)
+5. Talstation (2005)
+	\end{minted}
+	\item \textbf{tour4.txt}\begin{minted}[breaklines]{text}
+Berechnet in 0.03ms
+
+Tour:   (Gesamtlänge 1640)
+1. Dom (1596)
+2. Bogenschütze (1610,1683)
+3. Schnecke (1698)
+4. Fischweiher (1710)
+5. Reiterhof (1728)
+6. Schnecke (1742)
+7. Schmiede (1765)
+8. Große Gabel (1794,1874)
+9. Fingerhut (1917)
+10. Stadion (1934)
+11. Marktplatz (1962)
+12. Baumschule (1974)
+13. Polizeipräsidium (1991)
+14. Blaues Pferd (2004)
+	\end{minted}
+	\item \textbf{tour5.txt}\begin{minted}[breaklines]{text}
+Berechnet in 0.04ms
+
+Tour:   (Gesamtlänge 2460)
+1. Hexentanzplatz (1703)
+2. Eselsbrücke (1711)
+3. Dreibannstein (1724,1752)
+4. Schmetterling (1760)
+5. Dreibannstein (1781)
+6. Märchenwald (1793,1840)
+7. Eselsbrücke (1855,1877)
+8. Reiterdenkmal (1880)
+9. Riesenrad (1881,1902)
+10. Dreibannstein (1911)
+11. Olympisches Dorf (1924)
+12. Haus der Zukunft (1927)
+13. Stellwerk (1931,1942)
+14. Labyrinth (1955)
+15. Gauklerstadl (1961)
+16. Planetarium (1971)
+17. Känguruhfarm (1976)
+18. Balzplatz (1978)
+19. Dreibannstein (1998)
+20. Labyrinth (2013)
+21. CO2-Speicher (2022)
+22. Gabelhaus (2023)
+	\end{minted}
+\end{itemize}
+
+\section{Quellcode}
+
+\textit{program.py}
+\inputminted[breaklines,linenos,fontsize=\footnotesize]{python3}{program.py}
+\newpage
+
+\end{document}

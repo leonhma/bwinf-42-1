@@ -1,6 +1,6 @@
-from collections import defaultdict
 import os
 from typing import Dict, List, Tuple
+from time import time
 
 
 def load_tour(
@@ -25,7 +25,7 @@ def load_tour(
         - dem Abstand zum vorherigen Punkt
     """
     with open(os.path.join(os.path.dirname(__file__), path), "r", encoding="utf8") as f:
-        # Dimensionen der Konstruktion
+        # Dimensionen einlesen
         n = int(f.readline())
 
         tour = []
@@ -50,51 +50,45 @@ def load_tour(
 
 
 def main(tour: List[Tuple[str, List[int], bool, int]]):
-    # for each i increase j starting from i until j is the same as i
-    # no essential nodes can be in subtour except for i
+    timed = time()  # Zeitmessung
 
-    offset_dist = 0
-    # Vorangehende unnötige Knoten entfernen
+    offset_dist = 0  # Variable, um entfernte Strecke zu speichern
+
+    # Unwichtige Knoten vom Anfang entfernen
     x = 0
     while not tour[x][2]:
         x += 1
     offset_dist -= tour[x][3]
     tour = tour[x:]
 
-    print(tour)
-    subtours: Dict[int, List[Tuple[int, int]]] = defaultdict(list)  # {j: (i, v)}
     # Subtouren finden
+    subtours: Dict[int, Tuple[int, int]] = {}  # {j: (i, v)}
     for i in range(len(tour) - 1):
-        for j in range(i+1, len(tour)):
+        for j in range(i + 1, len(tour)):
             if tour[i][0] == tour[j][0]:
-                subtours[j].append((i, tour[j][3] - tour[i][3]))
+                subtours[j] = (i, tour[j][3] - tour[i][3])
                 break
             elif tour[j][2]:
                 break
-    print(len(subtours), subtours)
 
-    # Beste Subtouren-Kombination finden
-    best = {-1: (0, [])} # 1: (value, ((i, j), (i, j)))
-    print(best[-1])
+    # Beste Subtouren-Kombination finden (Weighted Interval Scheduling)
+    best = {-1: (0, [])}  # 1: (value, ((i, j), (i, j)))
     for j in range(len(tour)):
-        # choose max(j+best_subtours[i], best_subtours[j] if exists) or best_subtours[j-1]
-        print((
-                best[j-1],
-                *((best[i][0]+v, best[i][1]+[(i, j)]) for i, v in subtours[j]),
-            ),)
-        best[j] = max(
-            (
-                best[j-1],
-                *((best[i][0]+v, best[i][1]+[(i, j)]) for i, v in subtours[j]),
-            ),
-            key=lambda x: x[0]
-        )
+        if j in subtours:
+            i, v = subtours[j]
+            best[j] = max(
+                best[j - 1], (best[i][0] + v, best[i][1] + [(i, j)]), key=lambda x: x[0]
+            )
+        else:
+            best[j] = best[j - 1]  # nur leerraum
 
-    for i, j in reversed(best[len(tour)-1][1]):
+    # Subtouren entfernen
+    for i, j in reversed(best[len(tour) - 1][1]):
         tour[j][1] = tour[i][1] + tour[j][1]
         offset_dist += tour[i][3] - tour[j][3]
         tour = tour[:i] + tour[j:]
 
+    print(f"Berechnet in {(time() - timed)*1000:.2f}ms\n")
     # Tour ausgeben
     print(f"Tour:   (Gesamtlänge {tour[-1][3] + offset_dist})")
     for i, (name, years, *_) in enumerate(tour):

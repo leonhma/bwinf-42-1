@@ -1,0 +1,240 @@
+\documentclass[a4paper,12pt]{scrartcl}
+
+\usepackage[english,ngerman]{babel}
+\usepackage{csquotes}
+\usepackage{color}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{anyfontsize}
+\usepackage[hidelinks]{hyperref}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{tabu}
+\usepackage{tabularx}
+\usepackage[ngerman]{cleveref}
+\usepackage[onehalfspacing]{setspace}
+\usepackage[ backend=biber]{biblatex}
+\addbibresource{refs.bib}
+
+\title{\textbf{\Huge Aufgabe 3: Zauberschule}}
+\author{\LARGE Team-ID: \LARGE 00128 \\\\
+	    \LARGE Team-Name: \LARGE E29C8CF09F8E89 \\\\
+	    \LARGE Bearbeiter/-innen dieser Aufgabe: \\ 
+	    \LARGE Leonhard Masche\\\\}
+\date{\LARGE1. September 2023}
+
+% code
+\usepackage[cache=false]{minted}
+\usemintedstyle{xcode}
+
+% set up geometry
+% \usepackage[lmargin={3.5cm},rmargin={2cm}, tmargin={2cm},bmargin = {2cm}]{geometry}
+
+% font
+\usepackage{fontspec}
+% \setmonofont{Fira Code SemiBold}
+\setmainfont{Arial}
+
+% configure headers and footers
+\graphicspath{{./assets/}}
+
+% custom commands
+\newcommand*\wildcard[2][5cm]{\vspace*{2cm}\parbox{#1}{\hrulefill\par#2}}
+\newcommand{\fig}[3][]{\begin{figure}[H] \includegraphics[#1]{#2}
+\centering\caption{#3}\end{figure}}
+\newcommand{\pyinline}[1]{\mintinline{python}{#1}}
+
+\pagenumbering{arabic}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+% hyphenation
+\hyphenation{Fraun-hof-er}
+
+% \setcounter{biburlnumpenalty}{100}
+% \setcounter{biburlucpenalty}{100}
+% \setcounter{biburllcpenalty}{100}
+
+\usepackage[hang]{footmisc}
+\setlength{\footnotemargin}{0.8em}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\section{Lösungsidee}
+
+Zur Lösung dieses Shortest-Path-Problems gibt es einige bekannte Algorithmen.
+Die möglichen Wege in der Zauberschule können als gewichteter Graph dargestellt
+werden, wobei Bewegungen in die vier Richtungen (links, oben, rechts, unten) ein
+Gewicht von $1$, und Stockwerkwechsel ein Gewicht von $3$ haben.\footnote{
+	Das Programm wurde entsprechend der originalen Aufgabenstellung vom 1. Sept.
+	geschrieben. Das bedeutet, Distanzen werden wie im Aufgabenblatt dargestellt
+	berechnet.} Um nun einen
+kürzesten Pfad zu finden, wird Dijkstra's Algorithmus verwendet: Für jeden
+besuchten Knoten (Feld) wird dessen Vorgänger gespeichert, sodass letztendlich
+der Pfad selbst zurückverfolgt werden kann. Entsprechend Dijktra's Algorithmus
+ist dies der kürzest mögliche Pfad.\footfullcite[Vgl.][]{dijkstraNoteTwoProblems1959}
+
+
+\section{Umsetzung}
+
+Das Programm (\texttt{program.py}) ist in Python umgesetzt und mit einer Umgebung ab
+der Version 3.8 ausführbar. Zum Umgang mit Matrizen wird die externe
+Bibliothek \texttt{numpy} verwendet.
+
+Beim Ausführen der Datei wird zuerst nach der Zahl des Beispiels gefragt. Dieses
+wird nun aus der Datei \texttt{input/zauberschule\{n\}.txt} geladen und bearbeitet. Das
+Ergebnis wird, zusammen mit einigen Werten, ausgegeben. Das resultierende
+Zauberschule-Gitter wird zusätzlich in eine Datei geschrieben.
+
+\section{Beispiele}
+
+Hier wird das Programm auf die 6 Beispiele von der Website angewendet.
+Zusätzlich wird ein eigenes Beispiel (\texttt{zauberschule6.txt}) bearbeitet, welches
+eine unlösbare Aufgabe darstellt:
+
+\begin{itemize}
+	\item \textbf{zauberschule0.txt}\begin{minted}[breaklines]{text}
+Oben:         Unten:
+############# #############
+#.....#.....# #.......#...#
+#.###.#.###.# #...#.#.#...#
+#...#.#...#.# #...#.#.....#
+###.#.###.#.# #.###.#.#.###
+#...#.....#.# #.....#.#...#
+#.#########.# #####.###...#
+#.....#.....# #.....#.....#
+#####.#.###.# #.#########.#
+#....A#B..#.# #...#!>!....#
+#.#########.# #.#.#.#.###.#
+#...........# #.#...#...#.#
+############# #############
+
+Ausgabe gespeichert in "output/zauberschule0.txt"
+
+Weg mit Länge 7s in 71 Iterationen (0.61ms) gefunden.
+	\end{minted}
+	\item \textbf{zauberschule1.txt}\begin{minted}[breaklines]{text}
+Oben:                 Unten:
+##################### #####################
+#...#.....#...#.....# #.......#.....#.....#
+#.#.#.###.#.#.#.###.# #.###.#.#.###.#.###.#
+#.#.#...#.#.#...#...# #.....#.#.#.....#.#.#
+###.###.#.#.#####.### #######.#.#######.#.#
+#.#.#...#.#B....#...# #.....#.#.....#...#.#
+#.#.#.###.#^###.##### #.###.#.#.###.###.#.#
+#.#...#.#.#^<A#.....# #.#.#...#.#...#...#.#
+#.#####.#.#########.# #.#.#######.###.###.#
+#...................# #...........#.......#
+##################### #####################
+
+Ausgabe gespeichert in "output/zauberschule1.txt"
+
+Weg mit Länge 2s in 4 Iterationen (0.16ms) gefunden.
+	\end{minted}
+	\item \textbf{zauberschule2.txt}\begin{minted}[breaklines]{text}
+Oben:                                         
+#############################################
+#...#.....#...........#.#...........#.......#
+#.#.#.###.#########.#.#.#.#######.#.#.#####.#
+#.#.#...#.#.........#A>!#!#.....#.#.#...#...#
+###.###.#.#.#############v#.#.###.#.###.#.###
+#.#.#...#.#..............>>B#.#...#.#...#.#.#
+#.#.#.###.###########.#########.###.#.###.#.#
+#.#...#.#.#.........#.#.#.....#.#.....#.#.#.#
+#.#####.#.#.#######.#.#.#.###.#.#######.#.#.#
+#.....#...#...#.#...#...#.#.#.#.......#.#.#.#
+#.#####.#####.#.#.#######.#.#.#######.#.#.#.#
+#.....#.......#.#.#.....#.#.#.#...#...#...#.#
+#.###.#########.#.###.#.#.#.#.#.#.#.###.###.#
+#...#.................#...#.....#...#.......#
+#############################################
+
+Unten:
+#############################################
+#...#.......#.....#.....#...#...#.....#.....#
+#.#.#.#####.###.#.###.#.#.#.#.#.#.###.###.###
+#.#.#.....#.#...#.....#!>!#.#.#...#.#...#...#
+###.#.###.#.#.#############.#.#####.###.###.#
+#.#.#...#.#.#.#.....#...#.#.#...#.#...#.#...#
+#.#.#####.#.#.#.###.#.#.#.#.#.#.#.#.#.#.#.###
+#.#...#...#.#.....#.#.#...#.#.#.#...#.#.#...#
+#.###.#.###.#.#####.#.###.#.###.#####.#.###.#
+#...#.#.#...#...#...#...#.#...#.#.....#.....#
+#.###.#.#.#######.#####.#####.#.#.#.#######.#
+#...#...#...#...#.....#.......#.#.#.#.....#.#
+#.#.#######.#.#.#####.#.#######.#.###.###.#.#
+#.#...........#.......#.........#.......#...#
+#############################################
+
+Ausgabe gespeichert in "output/zauberschule2.txt"
+
+Weg mit Länge 10s in 93 Iterationen (0.79ms) gefunden.
+	\end{minted}
+	\newpage
+	\item \textbf{zauberschule3.txt}\begin{minted}[breaklines]{text}
+Oben:                           Unten:
+############################### ###############################
+#...#.....#...........#.......# #.......#.....#...#...#.......#
+#.#.#.###.#.###.#######.###.#.# #.###.#.#.#.#.#.###.#.#.#.#####
+#.#.#...#.#.#.#.#.......#...#.# #.....#.#.#.#.#.....#.#.#.....#
+###.###.#.#.#.#.#.#######.###.# #######.#.#.#.#.#####.#.#####.#
+#.#.#...#.#...#.....#.....#.#.# #.....#.#.#.#.#.#...#...#.....#
+#.#.#.###.###########.#####.#.# #.###.#.###.#.###.#.#.###.#####
+#.#...#.#.#.........#...#.....# #...#.#.#...#.....#.#.#.#.....#
+#.#####.#.#.#######.###.#.##### #.#.###.#.#########.#.#.#####.#
+#...#.#...#...#.#...#...#.#...# #.#.....#.#.......#.#.....#...#
+#.#.#.#.#####.#.#.###.###.#.#.# #.#######.#######.#.#.#####.#.#
+#.#.#.#.......#.#.#...#.#...#.# #...#...#.....#...#.#.#...#.#.#
+#.#.#.#########.#.#.###.#####.# ###.#.#.#.###.#.###.#.#.#.#.#.#
+#.#.......#.#.....#.#.#.....#.# #.#.#.#...#...#.....#.#.#.#.#.#
+#.#######.#.#.#####.#.#.###.#.# #.#.#.#####.###.#######.#.#.#.#
+#.#.....#...#.#.#...#.#.#.#...# #.#.#.....#.#.....#.....#.#.#.#
+#.#.###.#####.#.#.#.#.#.#.##### #.#.#######.#####.###.###.#.#.#
+#.#...#.....#.#.#.#.#...#.....# #.#.....#...#...#.....#.#...#.#
+#.###.#####.#.#.#.#.###.#####.# #.#####.#.###.#.#######.#####.#
+#...#.#...#...#...#...#.......# #.#...#.#.#...#.......#.#.....#
+#.#.#.#.#############.#.####### #.#.#.#.#.#.#########.#.#.#####
+#.#.#.#...............#.#.....# #...#.#.#.#...#...#.#.#.#.....#
+#.###.#.#######.#########.###.# #####.#.#.###.#.#.#.#.#.#####.#
+#...#.#.#...#...#.........#...# #.....#.#.......#.#.#.#...#...#
+###.#.###.#.#.###.#####.###.#.# #.###.#.#########.#.#.#.#.#.###
+#...#.....#.#.....#>>B#.#...#.# #...#.#.....#.#.....#.#.#.#.#.#
+#.#########.#######^#.###.###.# #.#.#######.#.#.#####.#.#.#.#.#
+#..A#>>>>v#.#>>>>>>^#...#.#.#.# #.#.......#.#...#.....#.#...#.#
+#.#v#^###v#.#^#########.#.#.#.# #.###.#####.#####.#####.#####.#
+#.#>>^..#>>>>^#...........#...# #...#.............#...........#
+############################### ###############################
+
+Ausgabe gespeichert in "output/zauberschule3.txt"
+
+Weg mit Länge 14s in 218 Iterationen (1.78ms) gefunden.
+	\end{minted}
+	\item \textbf{zauberschule4.txt}\begin{minted}[breaklines]{text}
+Ausgabe gespeichert in "output/zauberschule4.txt"
+
+Weg mit Länge 51s in 7043 Iterationen (45.75ms) gefunden.
+	\end{minted}
+	\item \textbf{zauberschule5.txt}\begin{minted}[breaklines]{text}
+Ausgabe gespeichert in "output/zauberschule5.txt"
+
+Weg mit Länge 75s in 10791 Iterationen (65.23ms) gefunden.
+			\end{minted}
+	\item \textbf{zauberschule6.txt}\begin{minted}[breaklines]{text}
+ValueError: Es wurde kein Pfad gefunden!
+			\end{minted}
+\end{itemize}
+
+\section{Quellcode}
+
+\textit{program.py}
+\inputminted[breaklines,linenos,fontsize=\footnotesize]{python3}{program.py}
+\newpage
+
+\end{document}

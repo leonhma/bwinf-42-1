@@ -1,0 +1,212 @@
+\documentclass[a4paper,12pt]{scrartcl}
+
+\usepackage[english,ngerman]{babel}
+\usepackage{csquotes}
+\usepackage{color}
+\usepackage{siunitx}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{anyfontsize}
+\usepackage[hidelinks]{hyperref}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{tabu}
+\usepackage{tabularx}
+\usepackage[ngerman]{cleveref}
+\usepackage[onehalfspacing]{setspace}
+%\usepackage[ backend=biber]{biblatex}
+%\addbibresource{refs.bib}
+
+\title{\textbf{\Huge Aufgabe 4: „Nandu“}}
+\author{\LARGE Team-ID: \LARGE 00128 \\\\
+	    \LARGE Team-Name: \LARGE E29C8CF09F8E89 \\\\
+	    \LARGE Bearbeiter/-innen dieser Aufgabe: \\ 
+	    \LARGE Leonhard Masche\\\\}
+\date{\LARGE20. Oktober 2023}
+
+% code
+\usepackage[cache=false]{minted}
+\usemintedstyle{xcode}
+
+% set up geometry
+% \usepackage[lmargin={3.5cm},rmargin={2cm}, tmargin={2cm},bmargin = {2cm}]{geometry}
+
+% font
+\usepackage{fontspec}
+% \setmonofont{Fira Code SemiBold}
+\setmainfont{Arial}
+
+% configure headers and footers
+\graphicspath{{./assets/}}
+
+% custom commands
+\newcommand*\wildcard[2][5cm]{\vspace*{2cm}\parbox{#1}{\hrulefill\par#2}}
+\newcommand{\fig}[3][]{\begin{figure}[H] \includegraphics[#1]{#2}
+\centering\caption{#3}\end{figure}}
+\newcommand{\pyinline}[1]{\mintinline{python}{#1}}
+
+\pagenumbering{arabic}
+
+\theoremstyle{definition}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+% hyphenation
+\hyphenation{Fraun-hof-er}
+
+% \setcounter{biburlnumpenalty}{100}
+% \setcounter{biburlucpenalty}{100}
+% \setcounter{biburllcpenalty}{100}
+
+\usepackage[hang]{footmisc}
+\setlength{\footnotemargin}{0.8em}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\section{Lösungsidee}
+
+Die Bausteine aus der Aufgabe können leicht als Lambda-Funktionen modelliert
+werden. Die Aufgabe wird als Matrix geladen und es wird über die einzelnen Zeilen
+und Buchstaben iteriert um Bausteine zu finden. Licht-Zustände werden in einer
+eigenen Matrix gespeichert, in der zu Anfang die Eingabezustände eingetragen
+werden. Wenn beim Iterieren zwei Buchstaben gefunden werden, die zu einem
+bekannten Baustein passen, so werden die Eingabezustände des Bausteins aus der
+Licht-Zustands-Matrix geladen und die Ausgabe mithilfe der Lambda-Funktion des
+Baustein errechnet, welche dann wiederum in die Licht-Zustands-Matrix eingefügt
+wird. Nachdem ein Baustein bearbeitet wurde, wird (wenn möglich) gleich zwei
+Felder nach rechts gesprungen, um ein wiederholtes Anwenden eines Bausteins zu
+vermeiden. Dies wird über alle Zeilen der Konstruktion (bis auf die Letzte mit
+ausschließlich Ausgabe-Lampen) fortgeführt. Zuletzt wird das Ergebnis an den
+Ausgabe-Lampen ausgelesen. Um alle möglichen Eingaben für ein Konstrukt zu
+simulieren gibt es bei $n$ Eingabe-Lampen $n^2$ Möglichkeiten für
+unterschiedliche Ausgaben, welche alle durch den vorher genannten Prozess
+simuliert und in einer Tabelle notiert werden.
+
+
+\section{Umsetzung}
+
+Das Programm (\texttt{program.py}) ist in Python umgesetzt und mit einer Umgebung ab
+der Version 3.6 ausführbar. Zum Umgang mit Matrizen wird die externe
+Bibliothek \texttt{numpy}, für die Verwendung von Tabellen \texttt{pandas} verwendet. Alle
+Vorraussetzungen für das Ausführen des Programmes können mit dem Befehl \texttt{pip
+	install -r requirements.txt} installiert werden.
+
+Beim Ausführen der Datei wird zuerst nach der Zahl des Beispiels gefragt. Dieses
+wird nun aus der Datei \texttt{input/zauberschule\{n\}.txt} geladen und bearbeitet. Nun
+werden durch einen einfachen binären Zähler alle Eingabezustände simuliert und
+das Ergebnis ausgegeben. Zusätzlich wird es auch als \texttt{csv}-Datei im Ordner
+\texttt{output} gespeichert, was eine programmatische Verifizierung der Ergebnisse
+erleichtert.
+
+\section{Beispiele}
+
+Hier wird das Programm auf die 5 Beispiele von der Website, sowie das linke
+Beispiel aus der Aufgabenstellung (\texttt{nandu0.txt}) angewendet:
+
+\begin{itemize}
+	\item \textbf{nandu0.txt}\begin{minted}[breaklines]{text}
+Simuliert in 0.80ms
+
+    Q1   Q2   L1   L2
+0  Aus  Aus  Aus  Aus
+1  Aus   An  Aus  Aus
+2   An  Aus  Aus  Aus
+3   An   An   An   An
+
+Ausgabe gespeichert in "output/nandu0.csv"
+	\end{minted}
+	\item \textbf{nandu1.txt}\begin{minted}[breaklines]{text}
+Simuliert in 0.80ms
+
+    Q1   Q2   L1   L2
+0  Aus  Aus   An   An
+1  Aus   An   An   An
+2   An  Aus   An   An
+3   An   An  Aus  Aus
+
+Ausgabe gespeichert in "output/nandu1.csv"
+	\end{minted}
+	\item \textbf{nandu2.txt}\begin{minted}[breaklines]{text}
+Simuliert in 1.09ms
+
+    Q1   Q2   L1   L2
+0  Aus  Aus  Aus   An
+1  Aus   An  Aus   An
+2   An  Aus  Aus   An
+3   An   An   An  Aus
+
+Ausgabe gespeichert in "output/nandu2.csv"
+	\end{minted}
+	\item \textbf{nandu3.txt}\begin{minted}[breaklines]{text}
+Simuliert in 1.60ms
+
+    Q1   Q2   Q3   L1   L2   L3   L4
+0  Aus  Aus  Aus   An  Aus  Aus   An
+1  Aus  Aus   An   An  Aus  Aus  Aus
+2  Aus   An  Aus   An  Aus   An   An
+3  Aus   An   An   An  Aus   An  Aus
+4   An  Aus  Aus  Aus   An  Aus   An
+5   An  Aus   An  Aus   An  Aus  Aus
+6   An   An  Aus  Aus   An   An   An
+7   An   An   An  Aus   An   An  Aus
+
+Ausgabe gespeichert in "output/nandu3.csv"
+	\end{minted}
+	\item \textbf{nandu4.txt}\begin{minted}[breaklines]{text}
+Simuliert in 1.95ms
+
+     Q1   Q2   Q3   Q4   L1   L2
+0   Aus  Aus  Aus  Aus  Aus  Aus
+1   Aus  Aus  Aus   An  Aus  Aus
+2   Aus  Aus   An  Aus  Aus   An
+3   Aus  Aus   An   An  Aus  Aus
+4   Aus   An  Aus  Aus   An  Aus
+5   Aus   An  Aus   An   An  Aus
+6   Aus   An   An  Aus   An   An
+7   Aus   An   An   An   An  Aus
+8    An  Aus  Aus  Aus  Aus  Aus
+9    An  Aus  Aus   An  Aus  Aus
+10   An  Aus   An  Aus  Aus   An
+11   An  Aus   An   An  Aus  Aus
+12   An   An  Aus  Aus  Aus  Aus
+13   An   An  Aus   An  Aus  Aus
+14   An   An   An  Aus  Aus   An
+15   An   An   An   An  Aus  Aus
+
+Ausgabe gespeichert in "output/nandu4.csv"
+	\end{minted}
+	      \newpage
+	\item \textbf{nandu5.txt}\begin{minted}[breaklines]{text}
+Simuliert in 15.92ms
+
+     Q1   Q2   Q3   Q4   Q5   Q6   L1   L2   L3   L4   L5
+0   Aus  Aus  Aus  Aus  Aus  Aus  Aus  Aus  Aus   An  Aus
+1   Aus  Aus  Aus  Aus  Aus   An  Aus  Aus  Aus   An  Aus
+2   Aus  Aus  Aus  Aus   An  Aus  Aus  Aus  Aus   An   An
+3   Aus  Aus  Aus  Aus   An   An  Aus  Aus  Aus   An   An
+4   Aus  Aus  Aus   An  Aus  Aus  Aus  Aus   An  Aus  Aus
+..  ...  ...  ...  ...  ...  ...  ...  ...  ...  ...  ...
+59   An   An   An  Aus   An   An   An  Aus  Aus   An   An
+60   An   An   An   An  Aus  Aus   An  Aus   An  Aus  Aus
+61   An   An   An   An  Aus   An   An  Aus   An  Aus  Aus
+62   An   An   An   An   An  Aus   An  Aus  Aus   An   An
+63   An   An   An   An   An   An   An  Aus  Aus   An   An
+
+[64 rows x 11 columns]
+
+Ausgabe gespeichert in "output/nandu5.csv"
+			\end{minted}
+	      \textbf{output/nandu5.csv}: \url{https://github.com/leonhma/bwinf-42-1/blob/main/a4-nandu/output/nandu5.csv}
+\end{itemize}
+
+\section{Quellcode}
+
+\textit{program.py}
+\inputminted[breaklines,linenos,fontsize=\footnotesize]{python3}{program.py}
+\newpage
+
+\end{document}
