@@ -2,5 +2,9 @@
   "python.linting.pylintEnabled": false,
   "python.linting.pylamaEnabled": true,
   "python.linting.enabled": true,
-  "cSpell.words": ["kname", "nandu"]
+  "cSpell.words": [
+    "cdist",
+    "kname",
+    "nandu"
+  ]
 }
